@@ -1,9 +1,24 @@
 #!/bin/bash
 
-echo "Building Go Lambda CRUD application..."
+set -e
 
-# Build the application
-go build -o bin/main cmd/lambda/main.go
+echo "Building Lambda function for provided.al2 runtime..."
 
-echo "Build completed successfully!"
-echo "To run locally: docker-compose up"
+# Clean previous builds
+rm -rf build
+mkdir -p build
+
+# Build for Linux
+GOOS=linux GOARCH=amd64 go build -o bootstrap cmd/lambda/main.go
+
+# Check file size and type
+file bootstrap
+ls -lh bootstrap
+
+# Create zip with bootstrap file
+zip -j build/lambda-function.zip bootstrap
+
+# Clean up
+rm bootstrap
+
+echo "Build completed. File: build/lambda-function.zip"

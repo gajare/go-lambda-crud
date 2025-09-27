@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"log"
+	"os"
+
 	"go-lambda-crud/configs"
 	"go-lambda-crud/internal/database"
 	"go-lambda-crud/internal/handlers"
@@ -15,29 +18,60 @@ import (
 var userHandler *handlers.UserHandler
 
 func init() {
+	log.Println("Initializing Lambda function...")
+
 	// Load configuration
 	cfg := configs.LoadConfig()
 
 	// Initialize logger
 	appLogger := logger.NewLogger()
 
-	// Initialize database
+	// Initialize database (handle errors gracefully)
 	db, err := database.NewDatabase(cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName)
 	if err != nil {
-		appLogger.Error("Failed to connect to database", zap.Error(err))
-		panic(err)
+		appLogger.Error("Database connection failed", zap.Error(err))
+		// Continue without database for health checks
+	} else {
+		userHandler = handlers.NewUserHandler(db, appLogger)
+		appLogger.Info("Database connected successfully")
 	}
 
-	// Initialize handler
-	userHandler = handlers.NewUserHandler(db, appLogger)
-
-	appLogger.Info("Lambda function initialized successfully")
+	appLogger.Info("Lambda function initialized")
 }
 
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	return userHandler.HandleRequest(ctx, request)
+	// Health check endpoint (works without database)
+	if request.Path == "/health" && request.HTTPMethod == "GET" {
+		return events.APIGatewayProxyResponse{
+			StatusCode: 200,
+			Headers:    map[string]string{"Content-Type": "application/json"},
+			Body:       `{"status": "healthy", "service": "go-crud-lambda"}`,
+		}, nil
+	}
+
+	// If database is connected, use the full handler
+	if userHandler != nil {
+		return userHandler.HandleRequest(ctx, request)
+	}
+
+	// Database not available
+	return events.APIGatewayProxyResponse{
+		StatusCode: 503,
+		Headers:    map[string]string{"Content-Type": "application/json"},
+		Body:       `{"error": "Service unavailable", "message": "Database connection not available"}`,
+	}, nil
 }
 
 func main() {
-	lambda.Start(Handler)
+	// Check if running in Lambda environment
+	if os.Getenv("AWS_LAMBDA_RUNTIME_API") != "" {
+		lambda.Start(Handler)
+	} else {
+		// Local development mode
+		log.Println("Running in local mode (not Lambda)")
+
+		// Start a simple HTTP server for testing
+		log.Println("Local HTTP server would start here...")
+		log.Println("Use 'go run cmd/local/main.go' for local development")
+	}
 }
