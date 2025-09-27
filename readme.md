@@ -315,6 +315,8 @@ curl https://YOUR_API_ID.execute-api.YOUR_REGION.amazonaws.com/prod/health
 # Set your API URL
 export API_URL="https://YOUR_API_ID.execute-api.YOUR_REGION.amazonaws.com/prod"
 
+# API_URL= http://localhost:8080. 
+
 # 1. Health check
 curl $API_URL/health
 
@@ -631,3 +633,45 @@ aws lambda invoke --function-name go-crud-lambda \
 5. **Monitor**: Use CloudWatch logs for debugging
 
 This setup provides a complete, production-ready serverless Go application that can scale efficiently while maintaining developer productivity through robust local development capabilities.
+
+Here’s a cleaner, more polished version of your section:
+
+---
+
+## 🎯 Simplified Usage
+
+Once the cleanup is complete, you can manage deployments with a single, unified script:
+
+```bash
+# 🚀 Deploy everything (Lambda + Terraform + others)
+./deployments/deploy-master.sh all
+
+# 🪄 Deploy only the AWS Lambda function
+./deployments/deploy-master.sh lambda
+
+# 🌍 Deploy infrastructure using Terraform
+./deployments/deploy-master.sh terraform
+
+# 🧹 Remove old and unused scripts
+./deployments/deploy-master.sh clean
+```
+
+---
+
+## ✅ Verification Steps
+
+Before deleting any existing scripts, verify that everything is working as expected:
+
+1. **Check the existing Lambda function:**
+
+```bash
+aws lambda get-function --function-name go-crud-lambda
+```
+
+2. **Test the new master deployment script:**
+
+```bash
+./deployments/deploy-master.sh help
+```
+
+---
