@@ -1,1 +1,1 @@
-{"errorType":"Runtime.InvalidEntrypoint","errorMessage":"RequestId: 2c8e79bd-9544-4ed9-b35d-572846631969 Error: Couldn't find valid bootstrap(s): [/var/task/bootstrap /opt/bootstrap]"}
+{"statusCode":200,"headers":{"Content-Type":"application/json"},"multiValueHeaders":null,"body":"{\"status\": \"healthy\", \"service\": \"go-crud-lambda\"}"}

@@ -9,6 +9,10 @@
     "pathParameters": null,
     "isBase64Encoded": false,
     "requestContext": {
-        "requestId": "test-request-id"
+        "requestId": "test-request",
+        "accountId": "test",
+        "stage": "test",
+        "httpMethod": "GET",
+        "path": "/health"
     }
 }
